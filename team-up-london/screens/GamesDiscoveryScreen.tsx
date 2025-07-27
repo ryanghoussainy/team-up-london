@@ -3,7 +3,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
   SafeAreaView,
@@ -13,7 +12,6 @@ import {
 import Fonts from '../config/Fonts';
 import { Feather } from '@expo/vector-icons';
 import useGamesDiscoverySections from '../hooks/useGamesDiscoverySections';
-import useSports from '../hooks/useSports';
 import GameCard from '../components/GameCard';
 import { AVERAGE_SKILL_LEVEL } from '../constants/averageSkillLevel';
 import { getPlayersInGame } from '../operations/Games';
@@ -28,6 +26,7 @@ import Logo from '../components/Logo';
 import GameWithDistanceAndRegion from '../interfaces/GameWithDistanceAndRegion';
 import useGameFilters from '../hooks/useGameFilters';
 import GameFilterModal from '../components/GameFilterModal';
+import GameSearchFilterHeader from '../components/GameSearchFilterHeader';
 
 type GamesNavProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -246,87 +245,15 @@ export default function GamesDiscoveryScreen({ player }: { player: Player }) {
     <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
       <ScrollView style={styles.container}>
         <Logo />
-        <View
-          style={[
-            styles.sideBySide,
-            {
-              marginLeft: 24,
-              marginBottom: 4,
-              justifyContent: 'flex-end',
-              alignItems: 'center',
-            },
-          ]}
-        >
-          <Text
-            style={[
-              styles.subTitle,
-              {
-                marginTop: 12,
-                marginRight: 60,
-                zIndex: 0,
-                position: 'relative',
-              },
-            ]}
-          >
-            Discovery
-          </Text>
-          {/* Group everything inside one row */}
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            {/* Filter button */}
-            <Animated.View
-              style={{ transform: [{ translateX: interpolatedFilterShift }] }}
-            >
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  {
-                    marginLeft: 0,
-                    height: 50,
-                    width: 100,
-                    flexDirection: 'row',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  },
-                ]}
-                onPress={openFilterModal}
-              >
-                <Feather name="filter" size={24} color={Colours.primary} />
-                <Text style={[styles.buttonText, { fontWeight: 'bold' }]}>
-                  Filter
-                </Text>
-              </TouchableOpacity>
-            </Animated.View>
 
-            {/* Search bar */}
-            <Animated.View
-              style={[
-                styles.animatedSearchContainer,
-                { width: interpolatedWidth, marginLeft: 2 },
-              ]}
-            >
-              <TextInput
-                placeholder="Search..."
-                placeholderTextColor="#888"
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                style={styles.searchInput}
-                autoFocus={searchActive}
-              />
-            </Animated.View>
-
-            {/* Search icon */}
-            <TouchableOpacity
-              onPress={toggleSearch}
-              style={[styles.searchButton, { marginLeft: 2 }]}
-            >
-              <Feather
-                name={searchActive ? 'x' : 'search'}
-                size={24}
-                color={Colours.primary}
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
+        <GameSearchFilterHeader
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          searchActive={searchActive}
+          setSearchActive={setSearchActive}
+          searchWidth={searchWidth}
+          onFilterPress={openFilterModal}
+        />
 
         {/* Tab Navigation */}
         <View style={[styles.tabContainer, { marginTop: 15 }]}>
@@ -469,34 +396,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 16,
   },
-  subTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    fontFamily: Fonts.main,
-    marginBottom: 8,
-    textAlign: 'left',
-    alignSelf: 'center',
-  },
-  sideBySide: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  button: {
-    backgroundColor: Colours.extraButtons,
-    outlineColor: Colours.primary,
-    borderWidth: 0,
-    borderColor: Colours.primary,
-    padding: 10,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontSize: 16,
-    fontFamily: Fonts.main,
-    marginLeft: 8,
-  },
-  // New tab styles
   tabContainer: {
     flexDirection: 'row',
     backgroundColor: '#f5f5f5',
@@ -550,32 +449,20 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.main,
     color: '#666',
   },
-  searchInput: {
-    height: 50,
-    borderColor: '#ccc',
-    borderWidth: 0,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    marginRight: 10,
-    fontSize: 16,
-    fontFamily: Fonts.main,
-  },
-  animatedSearchContainer: {
-    height: 40,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 16,
-    marginRight: 15,
-    overflow: 'hidden',
-    paddingHorizontal: 0,
-    justifyContent: 'center',
-  },
-  searchButton: {
-    padding: 12,
+  button: {
     backgroundColor: Colours.extraButtons,
-    borderRadius: 12,
+    outlineColor: Colours.primary,
     borderWidth: 0,
     borderColor: Colours.primary,
-    marginRight: 8,
+    padding: 10,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonText: {
+    fontSize: 16,
+    fontFamily: Fonts.main,
+    marginLeft: 8,
   },
   tabIndicator: {
     position: 'absolute',
