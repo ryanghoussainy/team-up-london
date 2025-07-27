@@ -9,8 +9,6 @@ import {
   Alert,
   Platform,
   KeyboardAvoidingView,
-  Modal,
-  Dimensions,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -23,14 +21,11 @@ import { createGame, joinGame } from '../operations/Games';
 import Colours from '../config/Colours';
 import BackArrow from '../components/BackArrow';
 import Player from '../interfaces/Player';
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import useDateTimePickers from '../hooks/useDateTimePickers';
 import usePlayerCountAndCost from '../hooks/usePlayerCountAndCost';
 import useLocationManagement from '../hooks/useLocationManagement';
 import SportsVenuesSection from '../components/SportsVenuesSection';
-
-const { width, height } = Dimensions.get('window');
+import LocationSelectionModal from '../components/LocationSelectionModal';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateGame'>;
 
@@ -487,89 +482,18 @@ export default function CreateGameScreen({
             onChange={handleEndTimeChange}
           />
         )}
-
-        {/* Location Selection Modal */}
-        <Modal
-          visible={showLocationModal}
-          animationType="slide"
-          presentationStyle="pageSheet"
-        >
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <TouchableOpacity
-                onPress={() => setShowLocationModal(false)}
-                style={styles.modalCloseButton}
-              >
-                <Text style={styles.modalCloseText}>Cancel</Text>
-              </TouchableOpacity>
-              <Text style={styles.modalTitle}>Select Location</Text>
-              <TouchableOpacity
-                onPress={confirmLocationSelection}
-                style={styles.modalConfirmButton}
-              >
-                <Text style={styles.modalConfirmText}>Done</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.searchContainer}>
-              <GooglePlacesAutocomplete
-                placeholder="Search for places..."
-                onPress={handleLocationSelect}
-                query={{
-                  key: process.env.GOOGLE_PLACES_API_KEY!,
-                  language: 'en',
-                }}
-                styles={{
-                  container: styles.autocompleteContainer,
-                  textInputContainer: styles.autocompleteTextInputContainer,
-                  textInput: styles.autocompleteInput,
-                  listView: styles.autocompleteList,
-                  row: styles.autocompleteRow,
-                  description: styles.autocompleteMainText,
-                }}
-                textInputProps={{
-                  placeholderTextColor: '#888',
-                }}
-                renderDescription={(row) => row.description}
-                enablePoweredByContainer={false}
-                fetchDetails={true}
-                debounce={300}
-              />
-            </View>
-
-            <View style={styles.mapContainer}>
-              <MapView
-                provider={PROVIDER_GOOGLE}
-                style={styles.map}
-                region={mapRegion}
-                onPress={handleMapPress}
-                showsUserLocation={true}
-                showsMyLocationButton={true}
-              >
-                {locationData && (
-                  <Marker
-                    coordinate={{
-                      latitude: locationData.latitude,
-                      longitude: locationData.longitude,
-                    }}
-                    title={locationData.name}
-                    description={locationData.address}
-                    pinColor={Colours.primary}
-                  />
-                )}
-              </MapView>
-
-              <View style={styles.mapInstructions}>
-                <Text style={styles.mapInstructionsText}>
-                  {locationData
-                    ? 'Tap on the map to adjust the pin location'
-                    : 'Search for a place above or tap on the map to set location'}
-                </Text>
-              </View>
-            </View>
-          </View>
-        </Modal>
       </ScrollView>
+
+      {/* Location Selection Modal */}
+      <LocationSelectionModal
+        visible={showLocationModal}
+        locationData={locationData}
+        mapRegion={mapRegion}
+        onClose={() => setShowLocationModal(false)}
+        onConfirm={confirmLocationSelection}
+        onLocationSelect={handleLocationSelect}
+        onMapPress={handleMapPress}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -758,112 +682,6 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   locationCoords: {
-    fontSize: 12,
-    fontFamily: Fonts.main,
-    color: '#555',
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderColor: '#eee',
-  },
-  modalCloseButton: {
-    padding: 8,
-  },
-  modalCloseText: {
-    fontSize: 16,
-    fontFamily: Fonts.main,
-    color: Colours.primary,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontFamily: Fonts.main,
-    fontWeight: 'bold',
-  },
-  modalConfirmButton: {
-    padding: 8,
-  },
-  modalConfirmText: {
-    fontSize: 16,
-    fontFamily: Fonts.main,
-    color: Colours.primary,
-  },
-  searchContainer: {
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
-  autocompleteContainer: {
-    flex: 0, // allow map below to size properly
-  },
-  autocompleteTextInputContainer: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  autocompleteInput: {
-    fontFamily: Fonts.main,
-    fontSize: 16,
-    padding: 10,
-  },
-  autocompleteList: {
-    backgroundColor: '#fff',
-  },
-  autocompleteRow: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  autocompleteMainText: {
-    fontFamily: Fonts.main,
-    fontSize: 16,
-  },
-  mapContainer: {
-    flex: 1,
-    height: height * 0.4,
-    marginHorizontal: 16,
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  map: {
-    flex: 1,
-  },
-  mapInstructions: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    padding: 8,
-  },
-  mapInstructionsText: {
-    fontSize: 14,
-    fontFamily: Fonts.main,
-    textAlign: 'center',
-  },
-  selectedLocationInfo: {
-    padding: 16,
-    borderTopWidth: 1,
-    borderColor: '#eee',
-  },
-  selectedLocationName: {
-    fontSize: 16,
-    fontFamily: Fonts.main,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  selectedLocationAddress: {
-    fontSize: 14,
-    fontFamily: Fonts.main,
-    color: '#555',
-    marginBottom: 4,
-  },
-  selectedLocationCoords: {
     fontSize: 12,
     fontFamily: Fonts.main,
     color: '#555',
