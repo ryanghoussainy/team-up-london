@@ -25,6 +25,7 @@ import useLocationManagement from '../hooks/useLocationManagement';
 import SportsVenuesSection from '../components/SportsVenuesSection';
 import LocationSelectionModal from '../components/LocationSelectionModal';
 import SportSelectionSection from '../components/SportSelectionSection';
+import PlayerCountSection from '../components/PlayerCountSection';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateGame'>;
 
@@ -318,63 +319,14 @@ export default function CreateGameScreen({
         />
 
         {/* Player Count Fields */}
-        <View style={styles.fieldRow}>
-          <View style={[styles.halfField, { paddingTop: 10 }]}>
-            <Text style={styles.label}>
-              Min Players <Text style={{ color: 'red' }}>*</Text>
-            </Text>
-            <View style={styles.numberInputContainer}>
-              <TouchableOpacity
-                style={styles.stepperButton}
-                onPress={() => adjustMinPlayers(false)}
-              >
-                <Text style={styles.stepperText}>-</Text>
-              </TouchableOpacity>
-              <TextInput
-                style={styles.numberInput}
-                value={minPlayers?.toString() || ''}
-                onChangeText={handleMinPlayersChange}
-                placeholder="0"
-                placeholderTextColor="#888"
-                keyboardType="numeric"
-              />
-              <TouchableOpacity
-                style={styles.stepperButton}
-                onPress={() => adjustMinPlayers(true)}
-              >
-                <Text style={styles.stepperText}>+</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <View style={[styles.halfField, { paddingTop: 10 }]}>
-            <Text style={styles.label}>
-              Max Players <Text style={{ color: 'red' }}>*</Text>
-            </Text>
-            <View style={styles.numberInputContainer}>
-              <TouchableOpacity
-                style={styles.stepperButton}
-                onPress={() => adjustMaxPlayers(false)}
-              >
-                <Text style={styles.stepperText}>-</Text>
-              </TouchableOpacity>
-              <TextInput
-                style={styles.numberInput}
-                value={maxPlayers?.toString() || ''}
-                onChangeText={handleMaxPlayersChange}
-                placeholder="0"
-                placeholderTextColor="#888"
-                keyboardType="numeric"
-              />
-              <TouchableOpacity
-                style={styles.stepperButton}
-                onPress={() => adjustMaxPlayers(true)}
-              >
-                <Text style={styles.stepperText}>+</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
+        <PlayerCountSection
+          minPlayers={minPlayers}
+          maxPlayers={maxPlayers}
+          onMinPlayersChange={handleMinPlayersChange}
+          onMaxPlayersChange={handleMaxPlayersChange}
+          onAdjustMinPlayers={adjustMinPlayers}
+          onAdjustMaxPlayers={adjustMaxPlayers}
+        />
 
         {/* Cost Field */}
         <View style={styles.field}>
@@ -485,15 +437,6 @@ const styles = StyleSheet.create({
   field: {
     marginBottom: 16,
   },
-  fieldRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  halfField: {
-    flex: 0.48,
-  },
   label: {
     fontSize: 16,
     fontFamily: Fonts.main,
@@ -535,31 +478,6 @@ const styles = StyleSheet.create({
   dateTimeText: {
     fontFamily: Fonts.main,
     fontSize: 16,
-  },
-  numberInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-  },
-  numberInput: {
-    flex: 1,
-    padding: 10,
-    fontFamily: Fonts.main,
-    textAlign: 'center',
-  },
-  stepperButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f0f0f0',
-  },
-  stepperText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: Colours.primary,
   },
   costInputContainer: {
     flexDirection: 'row',
