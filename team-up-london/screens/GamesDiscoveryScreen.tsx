@@ -27,10 +27,9 @@ import GameWithDistanceAndRegion from '../interfaces/GameWithDistanceAndRegion';
 import useGameFilters from '../hooks/useGameFilters';
 import GameFilterModal from '../components/GameFilterModal';
 import GameSearchFilterHeader from '../components/GameSearchFilterHeader';
+import GameTabNavigation, { TabType } from '../components/GameTabNavigation';
 
 type GamesNavProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
-
-type TabType = 'forYou' | 'nearYou' | 'trySomethingNew';
 
 export default function GamesDiscoveryScreen({ player }: { player: Player }) {
   const navigation = useNavigation<GamesNavProp>();
@@ -186,61 +185,6 @@ export default function GamesDiscoveryScreen({ player }: { player: Player }) {
   const [searchActive, setSearchActive] = useState(false);
   const searchWidth = useRef(new Animated.Value(0)).current;
 
-  // Open/close
-  const toggleSearch = () => {
-    if (!searchActive) {
-      setSearchActive(true);
-      Animated.timing(searchWidth, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: false,
-      }).start();
-    } else {
-      Animated.timing(searchWidth, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: false,
-      }).start(() => {
-        setSearchActive(false);
-        setSearchQuery('');
-      });
-    }
-  };
-
-  const interpolatedWidth = searchWidth.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0%', '52%'],
-  });
-
-  const screenWidth = Dimensions.get('window').width;
-  const maxSearchWidth = screenWidth * 0.3;
-
-  const interpolatedFilterShift = searchWidth.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -maxSearchWidth * 0.1], // shift left as much as search bar expands
-  });
-
-  // Tab navigation animation
-  const tabTranslateX = useRef(new Animated.Value(0)).current;
-
-  const switchTab = (tab: TabType) => {
-    setActiveTab(tab);
-    let toValue = 0;
-    const tabWidth = (screenWidth - 16) / 3; // Assuming equal width tabs
-
-    if (tab === 'forYou') toValue = 0;
-    else if (tab === 'nearYou')
-      toValue = tabWidth - 8; // Account for container padding
-    else if (tab === 'trySomethingNew') toValue = tabWidth * 2 - 16;
-
-    Animated.spring(tabTranslateX, {
-      toValue,
-      useNativeDriver: true,
-      tension: 60,
-      friction: 8,
-    }).start();
-  };
-
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
       <ScrollView style={styles.container}>
@@ -255,56 +199,7 @@ export default function GamesDiscoveryScreen({ player }: { player: Player }) {
           onFilterPress={openFilterModal}
         />
 
-        {/* Tab Navigation */}
-        <View style={[styles.tabContainer, { marginTop: 15 }]}>
-          <Animated.View
-            style={[
-              styles.tabIndicator,
-              {
-                transform: [{ translateX: tabTranslateX }],
-              },
-            ]}
-          />
-          <TouchableOpacity
-            style={styles.tab}
-            onPress={() => switchTab('forYou')}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === 'forYou' && styles.activeTabText,
-              ]}
-            >
-              For You
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.tab}
-            onPress={() => switchTab('nearYou')}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === 'nearYou' && styles.activeTabText,
-              ]}
-            >
-              Near You
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.tab}
-            onPress={() => switchTab('trySomethingNew')}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === 'trySomethingNew' && styles.activeTabText,
-              ]}
-            >
-              Try New
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <GameTabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
         {/* Games Content */}
         <View style={styles.contentSection}>
@@ -396,35 +291,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 16,
   },
-  tabContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 16,
-    padding: 4,
-    marginBottom: 16,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
-    display: 'flex',
-    zIndex: 2, // Ensure text appears above the sliding indicator
-  },
-  tabText: {
-    fontSize: 14,
-    fontFamily: Fonts.main,
-    fontWeight: '500',
-    color: '#666',
-    textAlign: 'center',
-    width: '100%',
-  },
-  activeTabText: {
-    color: 'white',
-    fontWeight: '600',
-  },
   contentSection: {
     flex: 1,
     marginBottom: 80, // Space for create game button
@@ -463,20 +329,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: Fonts.main,
     marginLeft: 8,
-  },
-  tabIndicator: {
-    position: 'absolute',
-    top: 4,
-    left: 4,
-    width: `${100 / 3}%`, // One third of the container
-    height: '100%',
-    backgroundColor: Colours.primary,
-    borderRadius: 999,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
-    zIndex: 1,
   },
 });
