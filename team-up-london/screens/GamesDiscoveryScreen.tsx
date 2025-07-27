@@ -2,22 +2,15 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   ScrollView,
   StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
   SafeAreaView,
   Animated,
-  Dimensions,
 } from 'react-native';
-import Fonts from '../config/Fonts';
-import { Feather } from '@expo/vector-icons';
 import useGamesDiscoverySections from '../hooks/useGamesDiscoverySections';
 import { getPlayersInGame } from '../operations/Games';
 import Player from '../interfaces/Player';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/StackNavigator';
-import Colours from '../config/Colours';
 import useDistancesAndRegions from '../hooks/useDistancesAndRegions';
 import usePlayerCommunities from '../hooks/usePlayerCommunities';
 import Logo from '../components/Logo';
@@ -27,6 +20,7 @@ import GameFilterModal from '../components/GameFilterModal';
 import GameSearchFilterHeader from '../components/GameSearchFilterHeader';
 import GameTabNavigation, { TabType } from '../components/GameTabNavigation';
 import GamesContent from '../components/GamesContent';
+import CreateGameButton from '../components/CreateGameButton';
 
 type GamesNavProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -188,6 +182,10 @@ export default function GamesDiscoveryScreen({ player }: { player: Player }) {
     });
   };
 
+  const handleCreateGame = () => {
+    navigation.navigate('CreateGame', { communityId: null });
+  };
+
   // Search (+ animation)
   const [searchActive, setSearchActive] = useState(false);
   const searchWidth = useRef(new Animated.Value(0)).current;
@@ -233,31 +231,7 @@ export default function GamesDiscoveryScreen({ player }: { player: Player }) {
         />
       </ScrollView>
 
-      {/* Create Game Button */}
-      <TouchableOpacity
-        style={[
-          styles.button,
-          {
-            backgroundColor: Colours.primary,
-            borderColor: Colours.highlightButton,
-            borderWidth: 0,
-            position: 'absolute',
-            bottom: 20,
-            width: '90%',
-            alignSelf: 'center',
-            paddingVertical: 12,
-            flexDirection: 'row',
-          },
-        ]}
-        onPress={() => navigation.navigate('CreateGame', { communityId: null })}
-      >
-        <Feather name="plus" size={24} color={Colours.success} />
-        <Text
-          style={[styles.buttonText, { fontWeight: 'bold', color: 'white' }]}
-        >
-          Create Game
-        </Text>
-      </TouchableOpacity>
+      <CreateGameButton onPress={handleCreateGame} />
     </SafeAreaView>
   );
 }
@@ -267,20 +241,5 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     padding: 16,
-  },
-  button: {
-    backgroundColor: Colours.extraButtons,
-    outlineColor: Colours.primary,
-    borderWidth: 0,
-    borderColor: Colours.primary,
-    padding: 10,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontSize: 16,
-    fontFamily: Fonts.main,
-    marginLeft: 8,
   },
 });
