@@ -15,8 +15,6 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/StackNavigator';
 import useSports from '../hooks/useSports';
 import Fonts from '../config/Fonts';
-import SportIcon from '../components/SportIcon';
-import { ICON_FAMILIES } from '../constants/iconFamilies';
 import { createGame, joinGame } from '../operations/Games';
 import Colours from '../config/Colours';
 import BackArrow from '../components/BackArrow';
@@ -26,6 +24,7 @@ import usePlayerCountAndCost from '../hooks/usePlayerCountAndCost';
 import useLocationManagement from '../hooks/useLocationManagement';
 import SportsVenuesSection from '../components/SportsVenuesSection';
 import LocationSelectionModal from '../components/LocationSelectionModal';
+import SportSelectionSection from '../components/SportSelectionSection';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateGame'>;
 
@@ -312,38 +311,11 @@ export default function CreateGameScreen({
         {locationType === 'Sports Venue' && <SportsVenuesSection />}
 
         {/* Sport Selection */}
-        <Text style={[styles.label]}>
-          Select Sport <Text style={{ color: 'red' }}>*</Text>
-        </Text>
-        <View style={styles.sportsContainer}>
-          {sports &&
-            sports.length > 0 &&
-            sports.map((s) => (
-              <TouchableOpacity
-                key={s.id}
-                style={[
-                  styles.sportItem,
-                  sportId === s.id && styles.sportSelected,
-                ]}
-                onPress={() => setSportId(s.id)}
-              >
-                <SportIcon
-                  name={s.icon || 'default-icon'}
-                  family={s.icon_family as ICON_FAMILIES}
-                  size={24}
-                  color={sportId === s.id ? 'white' : Colours.primary}
-                />
-                <Text
-                  style={[
-                    styles.sportLabel,
-                    sportId === s.id && { color: 'white' },
-                  ]}
-                >
-                  {s.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-        </View>
+        <SportSelectionSection
+          sports={sports}
+          selectedSportId={sportId}
+          onSportSelect={setSportId}
+        />
 
         {/* Player Count Fields */}
         <View style={styles.fieldRow}>
@@ -606,28 +578,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
     fontFamily: Fonts.main,
-  },
-  sportsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  sportItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 10,
-    margin: 4,
-    borderWidth: 1,
-    borderColor: Colours.primary,
-    borderRadius: 8,
-  },
-  sportSelected: {
-    backgroundColor: Colours.primary,
-  },
-  sportLabel: {
-    marginTop: 4,
-    fontSize: 12,
-    fontFamily: Fonts.main,
-    color: Colours.primary,
   },
   optionContainer: {
     flexDirection: 'row',
