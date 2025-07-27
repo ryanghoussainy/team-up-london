@@ -3,21 +3,18 @@ import GameWithDistanceAndRegion from '../interfaces/GameWithDistanceAndRegion';
 import { AVERAGE_SKILL_LEVEL } from '../constants/averageSkillLevel';
 import Player from '../interfaces/Player';
 import { isSameDay } from 'date-fns';
+import { SkillFilter } from '../components/GameFilterModal';
 
 export default function useGameFilters() {
   // Actual filter states
   const [searchQuery, setSearchQuery] = useState('');
-  const [skillFilter, setSkillFilter] = useState<
-    'all' | 'beginner' | 'intermediate' | 'advanced' | 'expert'
-  >('all');
+  const [skillFilter, setSkillFilter] = useState<SkillFilter>('all');
   const [locationFilter, setLocationFilter] = useState('');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedSportIds, setSelectedSportIds] = useState<string[]>([]);
 
   // Temporary states for modal (before applying)
-  const [tempSkillFilter, setTempSkillFilter] = useState<
-    'all' | 'beginner' | 'intermediate' | 'advanced' | 'expert'
-  >('all');
+  const [tempSkillFilter, setTempSkillFilter] = useState<SkillFilter>('all');
   const [tempLocationFilter, setTempLocationFilter] = useState('');
   const [tempSelectedDate, setTempSelectedDate] = useState<Date | null>(null);
   const [tempSelectedSportIds, setTempSelectedSportIds] = useState<string[]>(

@@ -15,14 +15,19 @@ import { useState } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import useSports from '../hooks/useSports';
 
+export type SkillFilter =
+  | 'all'
+  | 'beginner'
+  | 'intermediate'
+  | 'advanced'
+  | 'expert';
+
 interface GameFilterModalProps {
   visible: boolean;
   onClose: () => void;
   onApplyFilters: () => void;
-  tempSkillFilter: 'all' | 'beginner' | 'intermediate' | 'advanced' | 'expert';
-  setTempSkillFilter: (
-    value: 'all' | 'beginner' | 'intermediate' | 'advanced' | 'expert'
-  ) => void;
+  tempSkillFilter: SkillFilter;
+  setTempSkillFilter: (value: SkillFilter) => void;
   tempLocationFilter: string;
   setTempLocationFilter: (value: string) => void;
   tempSelectedDate: Date | null;
@@ -131,14 +136,7 @@ export default function GameFilterModal({
                 <Picker
                   selectedValue={tempSkillFilter}
                   onValueChange={(itemValue) =>
-                    setTempSkillFilter(
-                      itemValue as
-                        | 'all'
-                        | 'beginner'
-                        | 'intermediate'
-                        | 'advanced'
-                        | 'expert'
-                    )
+                    setTempSkillFilter(itemValue)
                   }
                   style={styles.picker}
                 >
