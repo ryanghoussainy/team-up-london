@@ -1,12 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, SafeAreaView, Animated, Dimensions, Image } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, SafeAreaView, Animated, Dimensions } from 'react-native';
 import Fonts from '../config/Fonts';
 import { Feather } from '@expo/vector-icons';
 import useGamesDiscoverySections from '../hooks/useGamesDiscoverySections';
 import useSports from '../hooks/useSports';
 import GameCard from '../components/GameCard';
-import { Picker } from '@react-native-picker/picker';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { AVERAGE_SKILL_LEVEL } from '../constants/averageSkillLevel';
 import { getPlayersInGame } from '../operations/Games';
 import Player from '../interfaces/Player';
@@ -15,24 +13,18 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/StackNavigator';
 import Colours from '../config/Colours';
 import useDistancesAndRegions from '../hooks/useDistancesAndRegions';
-import Game from '../interfaces/Game';
-import { Region } from 'react-native-maps';
 import usePlayerCommunities from '../hooks/usePlayerCommunities';
 import Logo from '../components/Logo';
+import GameWithDistanceAndRegion from '../interfaces/GameWithDistanceAndRegion';
+import useGameFilters from '../hooks/useGameFilters';
+import GameFilterModal from '../components/GameFilterModal';
 
 type GamesNavProp = NativeStackNavigationProp<RootStackParamList, "Main">;
-
-interface GameWithDistanceAndRegion {
-    game: Game;
-    distance: { km: number; miles: number };
-    mapRegion: Region;
-}
 
 type TabType = 'forYou' | 'nearYou' | 'trySomethingNew';
 
 export default function GamesDiscoveryScreen({ player }: { player: Player }) {
     const navigation = useNavigation<GamesNavProp>();
-    const { sports } = useSports();
     const { communityIds } = usePlayerCommunities(player.id);
 
     const {
@@ -79,11 +71,8 @@ export default function GamesDiscoveryScreen({ player }: { player: Player }) {
         trySomethingNewGames, trySomethingNewDistances, trySomethingNewMapRegions
     ]);
 
-    // Search
-    const [searchQuery, setSearchQuery] = useState('');
-
     // Players cache keyed by game id
-    const [playersByGame, setPlayersByGame] = useState<{ [key: string]: Player[] }>({});
+    const [playersByGame, setPlayersByGame] = useState<Record<string, Player[]>>({});
 
     useEffect(() => {
         const fetchPlayers = async () => {
@@ -101,85 +90,32 @@ export default function GamesDiscoveryScreen({ player }: { player: Player }) {
         fetchPlayers();
     }, [forYouGames, nearYouGames, trySomethingNewGames]);
 
-    // Filters
-    const [skillFilter, setSkillFilter] = useState<'all' | 'beginner' | 'intermediate' | 'advanced' | 'expert'>('all');
-    const [locationFilter, setLocationFilter] = useState('');
-    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-    const [selectedSportIds, setSelectedSportIds] = useState<string[]>([]);
-
-    // Modal state for filters
-    const [showFilterModal, setShowFilterModal] = useState(false);
-    const [tempSkillFilter, setTempSkillFilter] = useState(skillFilter);
-    const [tempLocationFilter, setTempLocationFilter] = useState(locationFilter);
-    const [tempSelectedDate, setTempSelectedDate] = useState<Date | null>(selectedDate);
-    const [tempSelectedSportIds, setTempSelectedSportIds] = useState<string[]>(selectedSportIds);
-    const [showDatePicker, setShowDatePicker] = useState(false);
-
-    const isSameDay = (d1: Date, d2: Date) =>
-        d1.getFullYear() === d2.getFullYear() &&
-        d1.getMonth() === d2.getMonth() &&
-        d1.getDate() === d2.getDate();
-
-    const toggleSportSelection = (sportId: string, isTemp: boolean = false) => {
-        const currentSelection = isTemp ? tempSelectedSportIds : selectedSportIds;
-        const setSelection = isTemp ? setTempSelectedSportIds : setSelectedSportIds;
-
-        if (currentSelection.includes(sportId)) {
-            setSelection(currentSelection.filter(id => id !== sportId));
-        } else {
-            setSelection([...currentSelection, sportId]);
-        }
-    };
-
-    const applyAllFilters = (games: Array<GameWithDistanceAndRegion>) => {
-        return games.filter((gameWithDistanceAndRegion) => {
-            const game = gameWithDistanceAndRegion.game;
-            // 1. Name search (case-insensitive substring)
-            if (!game.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-                return false;
-            }
-
-            // 2. Skill-level filter
-            const averageSkillLevel = AVERAGE_SKILL_LEVEL(playersByGame[game.id] || [], game.sport_id);
-            if (skillFilter !== 'all' && averageSkillLevel !== skillFilter) {
-                return false;
-            }
-
-            // 3. Location filter (case-insensitive substring)
-            if (
-                locationFilter.length > 0 &&
-                !game.location.toLowerCase().includes(locationFilter.toLowerCase())
-            ) {
-                return false;
-            }
-
-            // 4. Date filter (if a date is selected, show only games whose start_time falls on that day)
-            if (selectedDate) {
-                const gameDate = new Date(game.start_time);
-                if (!isSameDay(gameDate, selectedDate)) {
-                    return false;
-                }
-            }
-
-            // 5. Sports filter (if sports are selected, game must match one of the selected sports)
-            if (selectedSportIds.length > 0) {
-                if (!selectedSportIds.includes(game.sport_id)) {
-                    return false;
-                }
-            }
-
-            return true;
-        });
-    };
+    const {
+        searchQuery,
+        setSearchQuery,
+        tempSkillFilter,
+        setTempSkillFilter,
+        tempLocationFilter,
+        setTempLocationFilter,
+        tempSelectedDate,
+        setTempSelectedDate,
+        tempSelectedSportIds,
+        showFilterModal,
+        setShowFilterModal,
+        applyAllFilters,
+        handleApplyFilters,
+        openFilterModal,
+        toggleSportSelection,
+    } = useGameFilters();
 
     const getCurrentGames = () => {
         switch (activeTab) {
             case 'forYou':
-                return applyAllFilters(forYouSortedGames);
+                return applyAllFilters(forYouSortedGames, playersByGame);
             case 'nearYou':
-                return applyAllFilters(nearYouSortedGames);
+                return applyAllFilters(nearYouSortedGames, playersByGame);
             case 'trySomethingNew':
-                return applyAllFilters(trySomethingNewSortedGames);
+                return applyAllFilters(trySomethingNewSortedGames, playersByGame);
             default:
                 return [];
         }
@@ -269,13 +205,7 @@ export default function GamesDiscoveryScreen({ player }: { player: Player }) {
                         <Animated.View style={{ transform: [{ translateX: interpolatedFilterShift }] }}>
                             <TouchableOpacity
                                 style={[styles.button, { marginLeft: 0, height: 50, width: 100, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }]}
-                                onPress={() => {
-                                    setTempLocationFilter(locationFilter);
-                                    setTempSkillFilter(skillFilter);
-                                    setTempSelectedDate(selectedDate);
-                                    setTempSelectedSportIds(selectedSportIds);
-                                    setShowFilterModal(true);
-                                }}
+                                onPress={openFilterModal}
                             >
                                 <Feather name="filter" size={24} color={Colours.primary} />
                                 <Text style={[styles.buttonText, { fontWeight: 'bold' }]}>Filter</Text>
@@ -365,159 +295,20 @@ export default function GamesDiscoveryScreen({ player }: { player: Player }) {
                     </View>
                 </View>
 
-                {/* Filter Modal */}
-                <Modal
+                <GameFilterModal
                     visible={showFilterModal}
-                    transparent={true}
-                    animationType="fade"
-                    onRequestClose={() => setShowFilterModal(false)}
-                >
-                    <View style={{
-                        flex: 1,
-                        backgroundColor: 'rgba(0,0,0,0.4)',
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                    }}>
-                        <View style={{
-                            backgroundColor: '#fff',
-                            borderRadius: 12,
-                            padding: 20,
-                            width: '90%',
-                            maxWidth: 400,
-                            maxHeight: '80%',
-                        }}>
-                            <Text style={[styles.subTitle, { textAlign: 'center', marginBottom: 16 }]}>Filter Games</Text>
+                    onClose={() => setShowFilterModal(false)}
+                    onApplyFilters={handleApplyFilters}
+                    tempSkillFilter={tempSkillFilter}
+                    setTempSkillFilter={setTempSkillFilter}
+                    tempLocationFilter={tempLocationFilter}
+                    setTempLocationFilter={setTempLocationFilter}
+                    tempSelectedDate={tempSelectedDate}
+                    setTempSelectedDate={setTempSelectedDate}
+                    tempSelectedSportIds={tempSelectedSportIds}
+                    toggleSportSelection={toggleSportSelection}
+                />
 
-                            <ScrollView showsVerticalScrollIndicator={false}>
-                                {/* Sports Filter */}
-                                <View style={styles.formGroup}>
-                                    <Text style={styles.subTitleText}>Sports</Text>
-                                    <ScrollView
-                                        horizontal
-                                        showsHorizontalScrollIndicator={false}
-                                        style={styles.sportsContainer}
-                                        contentContainerStyle={styles.sportsContentContainer}
-                                    >
-                                        {sports.map((sport) => (
-                                            <TouchableOpacity
-                                                key={sport.id}
-                                                style={[
-                                                    styles.sportChip,
-                                                    tempSelectedSportIds.includes(sport.id) && styles.sportChipSelected
-                                                ]}
-                                                onPress={() => toggleSportSelection(sport.id, true)}
-                                            >
-                                                <Text style={[
-                                                    styles.sportChipText,
-                                                    tempSelectedSportIds.includes(sport.id) && styles.sportChipTextSelected
-                                                ]}>
-                                                    {sport.name}
-                                                </Text>
-                                            </TouchableOpacity>
-                                        ))}
-                                    </ScrollView>
-                                    {tempSelectedSportIds.length > 0 && (
-                                        <TouchableOpacity
-                                            onPress={() => setTempSelectedSportIds([])}
-                                            style={{ marginTop: 8 }}
-                                        >
-                                            <Text style={{ color: 'red', textAlign: 'center', fontSize: 14 }}>Clear All Sports</Text>
-                                        </TouchableOpacity>
-                                    )}
-                                </View>
-
-                                {/* Skill-Level Picker */}
-                                <View style={styles.formGroup}>
-                                    <Text style={styles.subTitleText}>Skill Level</Text>
-                                    <View style={styles.pickerContainer}>
-                                        <Picker
-                                            selectedValue={tempSkillFilter}
-                                            onValueChange={(itemValue) =>
-                                                setTempSkillFilter(itemValue as 'all' | 'beginner' | 'intermediate' | 'advanced' | 'expert')
-                                            }
-                                            style={styles.picker}
-                                        >
-                                            <Picker.Item label="All" value="all" />
-                                            <Picker.Item label="Beginner" value="beginner" />
-                                            <Picker.Item label="Intermediate" value="intermediate" />
-                                            <Picker.Item label="Advanced" value="advanced" />
-                                            <Picker.Item label="Expert" value="expert" />
-                                        </Picker>
-                                    </View>
-                                </View>
-
-                                {/* Location Filter Input */}
-                                <View style={styles.formGroup}>
-                                    <Text style={styles.subTitleText}>Location</Text>
-                                    <TextInput
-                                        style={styles.modalInput}
-                                        placeholder="Location..."
-                                        placeholderTextColor={'#888'}
-                                        value={tempLocationFilter}
-                                        onChangeText={setTempLocationFilter}
-                                    />
-                                </View>
-
-                                {/* Date Filter */}
-                                <View style={styles.formGroup}>
-                                    <Text style={styles.subTitleText}>Date</Text>
-                                    <TouchableOpacity
-                                        onPress={() => setShowDatePicker(true)}
-                                        style={[styles.button, { paddingVertical: 12 }]}
-                                    >
-                                        <Text style={styles.buttonText}>
-                                            {tempSelectedDate
-                                                ? tempSelectedDate.toLocaleDateString()
-                                                : 'Pick Date'}
-                                        </Text>
-                                    </TouchableOpacity>
-                                    {tempSelectedDate && (
-                                        <TouchableOpacity
-                                            onPress={() => setTempSelectedDate(null)}
-                                            style={{ marginTop: 8 }}
-                                        >
-                                            <Text style={{ color: 'red', textAlign: 'center' }}>Clear Date</Text>
-                                        </TouchableOpacity>
-                                    )}
-                                    {showDatePicker && (
-                                        <DateTimePicker
-                                            value={tempSelectedDate || new Date()}
-                                            mode="date"
-                                            display="default"
-                                            style={styles.datePicker}
-                                            onChange={(event, date) => {
-                                                setShowDatePicker(Platform.OS === 'ios');
-                                                if (date) setTempSelectedDate(date);
-                                            }}
-                                        />
-                                    )}
-                                </View>
-                            </ScrollView>
-
-                            {/* Modal Actions */}
-                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 }}>
-                                <TouchableOpacity
-                                    style={[styles.button, { flex: 1, marginRight: 8 }]}
-                                    onPress={() => setShowFilterModal(false)}
-                                >
-                                    <Text style={styles.buttonText}>Cancel</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={[styles.button, { flex: 1, marginLeft: 8, backgroundColor: Colours.primary }]}
-                                    onPress={() => {
-                                        setSkillFilter(tempSkillFilter);
-                                        setLocationFilter(tempLocationFilter);
-                                        setSelectedDate(tempSelectedDate);
-                                        setSelectedSportIds([...tempSelectedSportIds]);
-                                        setShowFilterModal(false);
-                                    }}
-                                >
-                                    <Text style={[styles.buttonText, { color: 'white' }]}>Apply</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </View>
-                </Modal>
             </ScrollView>
 
             {/* Create Game Button */}
@@ -546,13 +337,6 @@ const styles = StyleSheet.create({
         marginBottom: 8,
         textAlign: 'left',
         alignSelf: 'center',
-    },
-    subTitleText: {
-        fontSize: 18,
-        fontWeight: '600',
-        fontFamily: Fonts.main,
-        textAlign: 'left',
-        marginBottom: 8,
     },
     sideBySide: {
         flexDirection: 'row',
@@ -590,14 +374,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         display: 'flex',
         zIndex: 2, // Ensure text appears above the sliding indicator
-    },
-    activeTab: {
-        backgroundColor: Colours.primary,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-        elevation: 2,
     },
     tabText: {
         fontSize: 14,
@@ -644,75 +420,6 @@ const styles = StyleSheet.create({
         marginRight: 10,
         fontSize: 16,
         fontFamily: Fonts.main,
-    },
-    formGroup: {
-        marginBottom: 24,
-        width: '100%',
-    },
-    modalInput: {
-        height: 55,
-        width: '100%',
-        borderColor: '#ccc',
-        borderWidth: 1,
-        borderRadius: 5,
-        paddingHorizontal: 10,
-        fontSize: 16,
-        fontFamily: Fonts.main,
-    },
-    filtersRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    picker: {
-        width: '100%',
-        height: '100%',
-        fontSize: 16,
-        fontFamily: Fonts.main,
-        color: '#333',
-    },
-    pickerContainer: {
-        width: '100%',
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 5,
-        overflow: 'hidden',
-        height: Platform.OS === 'ios' ? 150 : 55, // keep wheel visible on iOS, dropdown‑sized on Android
-        justifyContent: 'flex-start',
-    },
-    datePicker: {
-        alignSelf: 'center',
-        marginTop: 10,
-    },
-    sportsContainer: {
-        maxHeight: 60,
-    },
-    sportsContentContainer: {
-        paddingHorizontal: 4,
-        alignItems: 'center',
-    },
-    sportChip: {
-        backgroundColor: '#f0f0f0',
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 20,
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        marginRight: 8,
-        marginVertical: 4,
-    },
-    sportChipSelected: {
-        backgroundColor: Colours.primary,
-        borderColor: Colours.primary,
-    },
-    sportChipText: {
-        fontSize: 14,
-        fontFamily: Fonts.main,
-        color: '#333',
-    },
-    sportChipTextSelected: {
-        color: 'white',
-        fontWeight: '600',
     },
     animatedSearchContainer: {
         height: 40,
