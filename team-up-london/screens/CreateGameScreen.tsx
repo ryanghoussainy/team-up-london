@@ -28,6 +28,8 @@ import Player from '../interfaces/Player';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
+import useDateTimePickers from '../hooks/useDateTimePickers';
+import usePlayerCountAndCost from '../hooks/usePlayerCountAndCost';
 
 const { width, height } = Dimensions.get('window');
 
@@ -91,9 +93,39 @@ export default function CreateGameScreen({
 }: { player: Player } & Props) {
   const { sports } = useSports();
 
+  // Date and time management
+  const {
+    startTime,
+    endTime,
+    showStartDatePicker,
+    showStartTimePicker,
+    showEndDatePicker,
+    showEndTimePicker,
+    setShowStartDatePicker,
+    setShowStartTimePicker,
+    setShowEndDatePicker,
+    setShowEndTimePicker,
+    handleStartDateChange,
+    handleStartTimeChange,
+    handleEndDateChange,
+    handleEndTimeChange,
+    formatDate,
+    formatTime,
+  } = useDateTimePickers();
+
+  // Player count and cost management
+  const {
+    maxPlayers,
+    minPlayers,
+    cost,
+    handleMinPlayersChange,
+    handleMaxPlayersChange,
+    adjustMinPlayers,
+    adjustMaxPlayers,
+    handleCostChange,
+  } = usePlayerCountAndCost();
+
   const [name, setName] = useState('');
-  const [startTime, setStartTime] = useState(new Date());
-  const [endTime, setEndTime] = useState(new Date());
   const [location, setLocation] = useState('');
   const [locationData, setLocationData] = useState<LocationData | null>(null);
   const [showLocationModal, setShowLocationModal] = useState(false);
@@ -101,10 +133,7 @@ export default function CreateGameScreen({
     'Sports Venue' | 'Park' | null
   >(null);
   const [notesFromHost, setNotesFromHost] = useState('');
-  const [maxPlayers, setMaxPlayers] = useState<number | null>(null);
-  const [minPlayers, setMinPlayers] = useState<number | null>(null);
   const [sportId, setSportId] = useState<string | null>(null);
-  const [cost, setCost] = useState<number>(0);
   const [userLocation, setUserLocation] = useState<{
     latitude: number;
     longitude: number;
@@ -117,13 +146,6 @@ export default function CreateGameScreen({
   });
 
   const { communityId } = route.params || null;
-
-  // Date picker states
-  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
-  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
-
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -150,101 +172,6 @@ export default function CreateGameScreen({
       });
     } catch (error) {
       Alert.alert('Error getting location:');
-    }
-  };
-
-  const handleStartDateChange = (event: any, selectedDate?: Date) => {
-    setShowStartDatePicker(false);
-    if (selectedDate) {
-      const newStartTime = new Date(startTime);
-      newStartTime.setFullYear(selectedDate.getFullYear());
-      newStartTime.setMonth(selectedDate.getMonth());
-      newStartTime.setDate(selectedDate.getDate());
-      setStartTime(newStartTime);
-    }
-  };
-
-  const handleStartTimeChange = (event: any, selectedTime?: Date) => {
-    setShowStartTimePicker(false);
-    if (selectedTime) {
-      const newStartTime = new Date(startTime);
-      newStartTime.setHours(selectedTime.getHours());
-      newStartTime.setMinutes(selectedTime.getMinutes());
-      setStartTime(newStartTime);
-    }
-  };
-
-  const handleEndDateChange = (event: any, selectedDate?: Date) => {
-    setShowEndDatePicker(false);
-    if (selectedDate) {
-      const newEndTime = new Date(endTime);
-      newEndTime.setFullYear(selectedDate.getFullYear());
-      newEndTime.setMonth(selectedDate.getMonth());
-      newEndTime.setDate(selectedDate.getDate());
-      setEndTime(newEndTime);
-    }
-  };
-
-  const handleEndTimeChange = (event: any, selectedTime?: Date) => {
-    setShowEndTimePicker(false);
-    if (selectedTime) {
-      const newEndTime = new Date(endTime);
-      newEndTime.setHours(selectedTime.getHours());
-      newEndTime.setMinutes(selectedTime.getMinutes());
-      setEndTime(newEndTime);
-    }
-  };
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-GB');
-  };
-
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-GB', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    });
-  };
-
-  const handleMaxPlayersChange = (text: string) => {
-    const num = parseInt(text);
-    if (text === '' || (num >= 0 && !isNaN(num))) {
-      setMaxPlayers(text === '' ? null : num);
-    }
-  };
-
-  const handleMinPlayersChange = (text: string) => {
-    const num = parseInt(text);
-    if (text === '' || (num >= 0 && !isNaN(num))) {
-      setMinPlayers(text === '' ? null : num);
-    }
-  };
-
-  const adjustMaxPlayers = (increment: boolean) => {
-    const current = maxPlayers || 0;
-    const newValue = increment ? current + 1 : Math.max(0, current - 1);
-    setMaxPlayers(newValue);
-  };
-
-  const adjustMinPlayers = (increment: boolean) => {
-    const current = minPlayers || 0;
-    const newValue = increment ? current + 1 : Math.max(0, current - 1);
-    setMinPlayers(newValue);
-  };
-
-  const handleCostChange = (text: string) => {
-    // Remove any non-numeric characters except decimal point
-    const cleanText = text.replace(/[^0-9.]/g, '');
-
-    // Ensure only one decimal point and max 2 decimal places
-    const parts = cleanText.split('.');
-    if (parts.length > 2) return;
-    if (parts[1] && parts[1].length > 2) return;
-
-    const num = parseFloat(cleanText);
-    if (cleanText === '' || (!isNaN(num) && num >= 0)) {
-      setCost(cleanText === '' ? 0 : parseFloat(cleanText));
     }
   };
 
