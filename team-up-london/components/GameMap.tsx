@@ -1,5 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, TouchableOpacity, StyleSheet, Text, ActivityIndicator } from 'react-native';
+import {
+  View,
+  TouchableOpacity,
+  StyleSheet,
+  Text,
+  ActivityIndicator,
+} from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { getGame } from '../operations/Games';
@@ -11,7 +17,12 @@ interface GameMapProps {
   location: string;
 }
 
-export default function GameMap({ mapRegion, distance, gameId, location }: GameMapProps) {
+export default function GameMap({
+  mapRegion,
+  distance,
+  gameId,
+  location,
+}: GameMapProps) {
   const [satelliteMode, setSatelliteMode] = useState(false);
   const markerRef = useRef<any>(null);
 

@@ -21,22 +21,14 @@ export default function ConfirmationModal({
   cancelText = 'Cancel',
 }: ConfirmationModalProps) {
   return (
-    <Modal
-      transparent={true}
-      visible={visible}
-      onRequestClose={onCancel}
-    >
+    <Modal transparent={true} visible={visible} onRequestClose={onCancel}>
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>{title}</Text>
           <Text style={styles.modalMessage}>{message}</Text>
           <View style={styles.modalButtons}>
             <Button title={cancelText} onPress={onCancel} />
-            <Button
-              color="red"
-              title={confirmText}
-              onPress={onConfirm}
-            />
+            <Button color="red" title={confirmText} onPress={onConfirm} />
           </View>
         </View>
       </View>

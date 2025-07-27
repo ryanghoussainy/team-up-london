@@ -1,4 +1,4 @@
 export default {
-    main: "MyFont-Regular",
-    bold: "MyFont-Bold",
+  main: 'MyFont-Regular',
+  bold: 'MyFont-Bold',
 };

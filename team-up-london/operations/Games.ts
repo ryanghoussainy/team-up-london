@@ -1,133 +1,136 @@
-import Game from "../interfaces/Game";
-import Player from "../interfaces/Player";
-import { supabase } from "../lib/supabase";
-import { Alert } from "react-native";
+import Game from '../interfaces/Game';
+import Player from '../interfaces/Player';
+import { supabase } from '../lib/supabase';
+import { Alert } from 'react-native';
 
 // Get a game by ID
 export async function getGame(gameId: string): Promise<Game> {
-    const { data, error } = await supabase
-        .from("games")
-        .select("*")
-        .eq("id", gameId)
-        .single();
+  const { data, error } = await supabase
+    .from('games')
+    .select('*')
+    .eq('id', gameId)
+    .single();
 
-    if (error) {
-        Alert.alert(error.message);
-    }
+  if (error) {
+    Alert.alert(error.message);
+  }
 
-    return data as Game;
+  return data as Game;
 }
 
 // User joins a game
 export async function joinGame(playerId: string, gameId: string) {
-    const { error } = await supabase
-        .from("game_players")
-        .upsert([{
-            player_id: playerId,
-            game_id: gameId,
-        }]);
+  const { error } = await supabase.from('game_players').upsert([
+    {
+      player_id: playerId,
+      game_id: gameId,
+    },
+  ]);
 
-    if (error) {
-        Alert.alert(error.message);
-    }
+  if (error) {
+    Alert.alert(error.message);
+  }
 }
 
 // User leaves a game
 export async function leaveGame(playerId: string, gameId: string) {
-    const { error } = await supabase
-        .from("game_players")
-        .delete()
-        .eq("player_id", playerId)
-        .eq("game_id", gameId);
+  const { error } = await supabase
+    .from('game_players')
+    .delete()
+    .eq('player_id', playerId)
+    .eq('game_id', gameId);
 
-    if (error) {
-        Alert.alert(error.message);
-    }
+  if (error) {
+    Alert.alert(error.message);
+  }
 }
 
 // Get players in the game
 export async function getPlayersInGame(game_id: string): Promise<Player[]> {
-    // 1. get the player ids in that game
-    const { data: playerIds, error: playerIdsError } = await supabase
-        .from("game_players")
-        .select("player_id")
-        .eq("game_id", game_id);
+  // 1. get the player ids in that game
+  const { data: playerIds, error: playerIdsError } = await supabase
+    .from('game_players')
+    .select('player_id')
+    .eq('game_id', game_id);
 
-    if (playerIdsError) {
-        Alert.alert(playerIdsError.message);
-        return [];
-    }
+  if (playerIdsError) {
+    Alert.alert(playerIdsError.message);
+    return [];
+  }
 
-    // 2. get the players
-    const { data: players, error: playersError } = await supabase
-        .from("players")
-        .select("*")
-        .in("id", playerIds.map(player => player.player_id));
+  // 2. get the players
+  const { data: players, error: playersError } = await supabase
+    .from('players')
+    .select('*')
+    .in(
+      'id',
+      playerIds.map((player) => player.player_id)
+    );
 
-    if (playersError) {
-        Alert.alert(playersError.message);
-        return [];
-    }
+  if (playersError) {
+    Alert.alert(playersError.message);
+    return [];
+  }
 
-    return players as Player[];
+  return players as Player[];
 }
 
 // Get games
 export async function getGames(): Promise<Game[]> {
-    const { data: games, error } = await supabase
-        .from("games")
-        .select("*")
+  const { data: games, error } = await supabase.from('games').select('*');
 
-    if (error) {
-        Alert.alert(error.message);
-        return [];
-    }
+  if (error) {
+    Alert.alert(error.message);
+    return [];
+  }
 
-    return games as Game[];
+  return games as Game[];
 }
 
 // Create game
 export async function createGame(
-    name: string,
-    start_time: Date,
-    end_time: Date,
-    location: string,
-    location_type: string,
-    notes_from_host: string,
-    max_players: number,
-    min_players: number,
-    sport_id: string,
-    cost: number,
-    host_id: string,
-    latitude: number,
-    longitude: number,
-    community_id?: string | null,
+  name: string,
+  start_time: Date,
+  end_time: Date,
+  location: string,
+  location_type: string,
+  notes_from_host: string,
+  max_players: number,
+  min_players: number,
+  sport_id: string,
+  cost: number,
+  host_id: string,
+  latitude: number,
+  longitude: number,
+  community_id?: string | null
 ): Promise<Game> {
-    const { data, error } = await supabase
-        .from("games")
-        .insert([{
-            name,
-            start_time,
-            end_time,
-            location,
-            location_type,
-            notes_from_host,
-            max_players,
-            min_players,
-            sport_id,
-            cost,
-            host_id,
-            latitude,
-            longitude,
-            community_id,
-        }])
-        .select("*")
-        .single();
+  const { data, error } = await supabase
+    .from('games')
+    .insert([
+      {
+        name,
+        start_time,
+        end_time,
+        location,
+        location_type,
+        notes_from_host,
+        max_players,
+        min_players,
+        sport_id,
+        cost,
+        host_id,
+        latitude,
+        longitude,
+        community_id,
+      },
+    ])
+    .select('*')
+    .single();
 
-    if (error) {
-        Alert.alert(error.message);
-        throw new Error(error.message);
-    }
+  if (error) {
+    Alert.alert(error.message);
+    throw new Error(error.message);
+  }
 
-    return data as Game;
+  return data as Game;
 }

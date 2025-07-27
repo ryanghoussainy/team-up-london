@@ -10,7 +10,8 @@ interface Distance {
 }
 
 export default function useDistancesAndRegions(games: Game[]) {
-  const [location, setLocation] = useState<Location.LocationObjectCoords | null>(null);
+  const [location, setLocation] =
+    useState<Location.LocationObjectCoords | null>(null);
   const [distances, setDistances] = useState<Distance[]>([]);
   const [mapRegions, setMapRegions] = useState<Region[]>([]);
 
@@ -43,7 +44,9 @@ export default function useDistancesAndRegions(games: Game[]) {
         const dLon = toRad(game.longitude - userLon);
         const a =
           Math.sin(dLat / 2) ** 2 +
-          Math.cos(toRad(userLat)) * Math.cos(toRad(game.latitude)) * Math.sin(dLon / 2) ** 2;
+          Math.cos(toRad(userLat)) *
+            Math.cos(toRad(game.latitude)) *
+            Math.sin(dLon / 2) ** 2;
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         const km = R * c;
         const miles = km * 0.621371;

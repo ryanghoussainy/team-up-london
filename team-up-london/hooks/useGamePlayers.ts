@@ -1,5 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { getGame, getPlayersInGame, joinGame, leaveGame } from '../operations/Games';
+import {
+  getGame,
+  getPlayersInGame,
+  joinGame,
+  leaveGame,
+} from '../operations/Games';
 import Player from '../interfaces/Player';
 import { useFocusEffect } from '@react-navigation/native';
 import { supabase } from '../lib/supabase'; // Adjust path to your Supabase client
@@ -47,7 +52,7 @@ export default function useGamePlayers(playerId: string, gameId: string) {
 
     // Create a unique channel name to avoid conflicts
     const channelName = `game-players-${gameId}-${Date.now()}`;
-    
+
     const subscription = supabase
       .channel(channelName)
       .on(
@@ -59,7 +64,7 @@ export default function useGamePlayers(playerId: string, gameId: string) {
         },
         async (payload) => {
           console.log('Real-time player update:', payload);
-          
+
           try {
             // For any change, just refresh all players to keep it simple and reliable
             await refreshPlayers();
@@ -90,7 +95,7 @@ export default function useGamePlayers(playerId: string, gameId: string) {
 
   const handleJoin = async () => {
     if (players.some((p) => p.id === playerId)) return;
-    
+
     try {
       await joinGame(playerId, gameId);
       // Don't refresh manually - let the real-time subscription handle it

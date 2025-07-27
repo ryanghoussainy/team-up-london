@@ -10,12 +10,12 @@ export default function useGame(gameId: string) {
 
   useEffect(() => {
     const fetchGame = async () => {
-        const fetchedGame = await getGame(gameId);
-        setGame(fetchedGame);
-        if (fetchedGame && fetchedGame.sport_id) {
-            const fetchedSport = await getSport(fetchedGame.sport_id);
-            setSport(fetchedSport);
-        }
+      const fetchedGame = await getGame(gameId);
+      setGame(fetchedGame);
+      if (fetchedGame && fetchedGame.sport_id) {
+        const fetchedSport = await getSport(fetchedGame.sport_id);
+        setSport(fetchedSport);
+      }
     };
 
     fetchGame();

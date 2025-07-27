@@ -9,7 +9,8 @@ interface Distance {
 }
 
 export default function useDistanceAndRegion(gameId: string) {
-  const [location, setLocation] = useState<Location.LocationObjectCoords | null>(null);
+  const [location, setLocation] =
+    useState<Location.LocationObjectCoords | null>(null);
   const [distance, setDistance] = useState<Distance | null>(null);
   const [mapRegion, setMapRegion] = useState<Region | null>(null);
 

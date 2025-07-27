@@ -27,7 +27,7 @@ export default function App() {
       return <PreferencesScreen player={player} preferences={preferences} />;
     }
     return <Navigator player={player} />;
-  }
+  };
 
   return (
     <View style={styles.container}>

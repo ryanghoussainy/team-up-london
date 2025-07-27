@@ -5,7 +5,13 @@ import { SKILL_MAPPING } from '../constants/skills';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Colours from '../config/Colours';
 
-export default function PlayerCard({ player, cardPlayer, isHost, sportId, onPress }: {
+export default function PlayerCard({
+  player,
+  cardPlayer,
+  isHost,
+  sportId,
+  onPress,
+}: {
   player: Player;
   cardPlayer: Player;
   isHost: boolean;
@@ -15,13 +21,18 @@ export default function PlayerCard({ player, cardPlayer, isHost, sportId, onPres
   // Get index of sport in cardPlayer's preferred sports
   const sportIndex = cardPlayer.preferred_sports_ids.indexOf(sportId);
   // Get skill level for the sport, default to 0 if not found
-  const skillLevel = sportIndex !== -1 ? cardPlayer.preferred_sports_skill_levels[sportIndex] : 0;
+  const skillLevel =
+    sportIndex !== -1
+      ? cardPlayer.preferred_sports_skill_levels[sportIndex]
+      : 0;
   const skillLabel = SKILL_MAPPING[skillLevel] || '';
   return (
     <TouchableOpacity
       style={[
         styles.card,
-        player.id === cardPlayer.id ? { borderWidth: 2, borderColor: 'green' } : { borderWidth: 2, borderColor: '#eee' },
+        player.id === cardPlayer.id
+          ? { borderWidth: 2, borderColor: 'green' }
+          : { borderWidth: 2, borderColor: '#eee' },
       ]}
       onPress={player.id !== cardPlayer.id ? onPress : undefined}
     >

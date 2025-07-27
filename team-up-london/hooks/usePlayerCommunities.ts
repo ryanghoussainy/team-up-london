@@ -7,7 +7,7 @@ export default function usePlayerCommunities(playerId: string) {
   useEffect(() => {
     const fetchCommunities = async () => {
       const communities = await getPlayerCommunities(playerId);
-      setCommunityIds(communities); 
+      setCommunityIds(communities);
     };
 
     fetchCommunities();

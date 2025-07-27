@@ -16,31 +16,38 @@ Notifications.setNotificationHandler({
 
 export default function Push({ playerId }: { playerId: string }) {
   const [expoPushToken, setExpoPushToken] = useState('');
-  const [channels, setChannels] = useState<Notifications.NotificationChannel[]>([]);
-  const [notification, setNotification] = useState<Notifications.Notification | undefined>(
-    undefined
+  const [channels, setChannels] = useState<Notifications.NotificationChannel[]>(
+    []
   );
+  const [notification, setNotification] = useState<
+    Notifications.Notification | undefined
+  >(undefined);
 
   useEffect(() => {
-    registerForPushNotificationsAsync().then(async token => {
+    registerForPushNotificationsAsync().then(async (token) => {
       token && setExpoPushToken(token);
 
       await supabase
-        .from("players")
+        .from('players')
         .update({ expo_push_token: token })
-        .eq("id", playerId);
+        .eq('id', playerId);
     });
 
     if (Platform.OS === 'android') {
-      Notifications.getNotificationChannelsAsync().then(value => setChannels(value ?? []));
+      Notifications.getNotificationChannelsAsync().then((value) =>
+        setChannels(value ?? [])
+      );
     }
-    const notificationListener = Notifications.addNotificationReceivedListener(notification => {
-      setNotification(notification);
-    });
+    const notificationListener = Notifications.addNotificationReceivedListener(
+      (notification) => {
+        setNotification(notification);
+      }
+    );
 
-    const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log(response);
-    });
+    const responseListener =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        console.log(response);
+      });
 
     return () => {
       notificationListener.remove();
@@ -78,7 +85,8 @@ async function registerForPushNotificationsAsync() {
   }
 
   if (Device.isDevice) {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    const { status: existingStatus } =
+      await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
     if (existingStatus !== 'granted') {
       const { status } = await Notifications.requestPermissionsAsync();
@@ -93,7 +101,8 @@ async function registerForPushNotificationsAsync() {
     // EAS projectId is used here.
     try {
       const projectId =
-        Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+        Constants?.expoConfig?.extra?.eas?.projectId ??
+        Constants?.easConfig?.projectId;
       if (!projectId) {
         throw new Error('Project ID not found');
       }

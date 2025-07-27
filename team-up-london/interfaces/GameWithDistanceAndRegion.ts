@@ -1,8 +1,8 @@
-import { Region } from "react-native-maps";
-import Game from "./Game";
+import { Region } from 'react-native-maps';
+import Game from './Game';
 
 export default interface GameWithDistanceAndRegion {
-    game: Game;
-    distance: { km: number; miles: number };
-    mapRegion: Region;
+  game: Game;
+  distance: { km: number; miles: number };
+  mapRegion: Region;
 }
