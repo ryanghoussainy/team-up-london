@@ -1,26 +1,20 @@
-import React, { useEffect, useRef, useState } from 'react';
-import {
-  ScrollView,
-  StyleSheet,
-  SafeAreaView,
-  Animated,
-} from 'react-native';
-import useGamesDiscoverySections from '../hooks/useGamesDiscoverySections';
-import { getPlayersInGame } from '../operations/Games';
+import React from 'react';
+import { ScrollView, StyleSheet, SafeAreaView } from 'react-native';
 import Player from '../interfaces/Player';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/StackNavigator';
-import useDistancesAndRegions from '../hooks/useDistancesAndRegions';
 import usePlayerCommunities from '../hooks/usePlayerCommunities';
 import Logo from '../components/Logo';
 import GameWithDistanceAndRegion from '../interfaces/GameWithDistanceAndRegion';
 import useGameFilters from '../hooks/useGameFilters';
 import GameFilterModal from '../components/GameFilterModal';
 import GameSearchFilterHeader from '../components/GameSearchFilterHeader';
-import GameTabNavigation, { TabType } from '../components/GameTabNavigation';
+import GameTabNavigation from '../components/GameTabNavigation';
 import GamesContent from '../components/GamesContent';
 import CreateGameButton from '../components/CreateGameButton';
+import useGamesDiscoveryData from '../hooks/useGamesDiscoveryData';
+import useGameTabs from '../hooks/useGameTabs';
 
 type GamesNavProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -28,108 +22,16 @@ export default function GamesDiscoveryScreen({ player }: { player: Player }) {
   const navigation = useNavigation<GamesNavProp>();
   const { communityIds } = usePlayerCommunities(player.id);
 
-  const { forYouGames, nearYouGames, trySomethingNewGames, gamePlayers } =
-    useGamesDiscoverySections(player.id);
-
-  const { distances: forYouDistances, mapRegions: forYouMapRegions } =
-    useDistancesAndRegions(forYouGames);
-  const { distances: nearYouDistances, mapRegions: nearYouMapRegions } =
-    useDistancesAndRegions(nearYouGames);
+  // Get all games data with a single hook
   const {
-    distances: trySomethingNewDistances,
-    mapRegions: trySomethingNewMapRegions,
-  } = useDistancesAndRegions(trySomethingNewGames);
+    forYouSortedGames,
+    nearYouSortedGames,
+    trySomethingNewSortedGames,
+    playersByGame,
+    gamePlayers,
+  } = useGamesDiscoveryData(player.id);
 
-  // States for sorted games by distance
-  const [forYouSortedGames, setForYouSortedGames] = useState<
-    GameWithDistanceAndRegion[]
-  >([]);
-  const [nearYouSortedGames, setNearYouSortedGames] = useState<
-    GameWithDistanceAndRegion[]
-  >([]);
-  const [trySomethingNewSortedGames, setTrySomethingNewSortedGames] = useState<
-    GameWithDistanceAndRegion[]
-  >([]);
-
-  // Active tab state
-  const [activeTab, setActiveTab] = useState<TabType>('forYou');
-
-  useEffect(() => {
-    // Combine games with their distances and regions
-    setForYouSortedGames(
-      forYouGames
-        .map((game, idx) => ({
-          game,
-          distance: forYouDistances[idx],
-          mapRegion: forYouMapRegions[idx],
-        }))
-        .sort(
-          (a, b) => (a.distance || { km: 0 }).km - (b.distance || { km: 0 }).km
-        )
-    );
-
-    setNearYouSortedGames(
-      nearYouGames
-        .map((game, idx) => ({
-          game,
-          distance: nearYouDistances[idx],
-          mapRegion: nearYouMapRegions[idx],
-        }))
-        .sort(
-          (a, b) => (a.distance || { km: 0 }).km - (b.distance || { km: 0 }).km
-        )
-    );
-
-    setTrySomethingNewSortedGames(
-      trySomethingNewGames
-        .map((game, idx) => ({
-          game,
-          distance: trySomethingNewDistances[idx],
-          mapRegion: trySomethingNewMapRegions[idx],
-        }))
-        .sort(
-          (a, b) => (a.distance || { km: 0 }).km - (b.distance || { km: 0 }).km
-        )
-    );
-  }, [
-    forYouGames,
-    forYouDistances,
-    forYouMapRegions,
-    nearYouGames,
-    nearYouDistances,
-    nearYouMapRegions,
-    trySomethingNewGames,
-    trySomethingNewDistances,
-    trySomethingNewMapRegions,
-  ]);
-
-  // Players cache keyed by game id
-  const [playersByGame, setPlayersByGame] = useState<Record<string, Player[]>>(
-    {}
-  );
-
-  useEffect(() => {
-    const fetchPlayers = async () => {
-      // Collect all unique game IDs across the three sections
-      const allGames = [
-        ...forYouGames,
-        ...nearYouGames,
-        ...trySomethingNewGames,
-      ];
-      const uniqueIds = Array.from(new Set(allGames.map((g) => g.id)));
-
-      const entries = await Promise.all(
-        uniqueIds.map(
-          async (id) => [id, await getPlayersInGame(id)] as [string, Player[]]
-        )
-      );
-
-      setPlayersByGame(Object.fromEntries(entries));
-    };
-
-    fetchPlayers();
-  }, [forYouGames, nearYouGames, trySomethingNewGames]);
-
+  // Game filters
   const {
     searchQuery,
     setSearchQuery,
@@ -148,32 +50,18 @@ export default function GamesDiscoveryScreen({ player }: { player: Player }) {
     toggleSportSelection,
   } = useGameFilters();
 
-  const getCurrentGames = () => {
-    switch (activeTab) {
-      case 'forYou':
-        return applyAllFilters(forYouSortedGames, playersByGame);
-      case 'nearYou':
-        return applyAllFilters(nearYouSortedGames, playersByGame);
-      case 'trySomethingNew':
-        return applyAllFilters(trySomethingNewSortedGames, playersByGame);
-      default:
-        return [];
+  // Tab management
+  const { activeTab, setActiveTab, getCurrentGames, getTabTitle } = useGameTabs(
+    {
+      forYouSortedGames,
+      nearYouSortedGames,
+      trySomethingNewSortedGames,
+      playersByGame,
+      applyAllFilters,
     }
-  };
+  );
 
-  const getTabTitle = () => {
-    switch (activeTab) {
-      case 'forYou':
-        return 'For You';
-      case 'nearYou':
-        return 'Near You';
-      case 'trySomethingNew':
-        return 'Try Something New';
-      default:
-        return '';
-    }
-  };
-
+  // Navigation handlers
   const handleGamePress = (game: GameWithDistanceAndRegion) => {
     navigation.navigate('Game', {
       game: game.game,
@@ -186,21 +74,14 @@ export default function GamesDiscoveryScreen({ player }: { player: Player }) {
     navigation.navigate('CreateGame', { communityId: null });
   };
 
-  // Search (+ animation)
-  const [searchActive, setSearchActive] = useState(false);
-  const searchWidth = useRef(new Animated.Value(0)).current;
-
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+    <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container}>
         <Logo />
 
         <GameSearchFilterHeader
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
-          searchActive={searchActive}
-          setSearchActive={setSearchActive}
-          searchWidth={searchWidth}
           onFilterPress={openFilterModal}
         />
 
@@ -237,6 +118,10 @@ export default function GamesDiscoveryScreen({ player }: { player: Player }) {
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',

@@ -2,11 +2,8 @@ import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
 import { Region } from 'react-native-maps';
 import { getGame } from '../operations/Games';
+import Distance from '../interfaces/Distance';
 
-interface Distance {
-  km: number;
-  miles: number;
-}
 
 export default function useDistanceAndRegion(gameId: string) {
   const [location, setLocation] =

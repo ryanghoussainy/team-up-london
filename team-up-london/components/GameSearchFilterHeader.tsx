@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -15,20 +15,17 @@ import Colours from '../config/Colours';
 interface SearchFilterHeaderProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  searchActive: boolean;
-  setSearchActive: (active: boolean) => void;
-  searchWidth: Animated.Value;
   onFilterPress: () => void;
 }
 
 export default function GameSearchFilterHeader({
   searchQuery,
   setSearchQuery,
-  searchActive,
-  setSearchActive,
-  searchWidth,
   onFilterPress,
 }: SearchFilterHeaderProps) {
+  const [searchActive, setSearchActive] = useState(false);
+  const searchWidth = useRef(new Animated.Value(0)).current;
+
   const toggleSearch = () => {
     if (!searchActive) {
       setSearchActive(true);

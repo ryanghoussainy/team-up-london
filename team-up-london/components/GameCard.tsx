@@ -11,6 +11,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import useGameCommunity from '../hooks/useGameCommunity';
 import Colours from '../config/Colours';
 import Player from '../interfaces/Player';
+import Distance from '../interfaces/Distance';
 
 export default function GameCard({
   player,
@@ -24,7 +25,7 @@ export default function GameCard({
   player: Player;
   game: Game;
   onPress?: () => void;
-  distance: { km: number; miles: number };
+  distance: Distance | null;
   isCommunityMember: boolean;
   numPlayers: number;
   averageSkillLevel: string;

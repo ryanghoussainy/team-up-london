@@ -9,10 +9,11 @@ import {
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { getGame } from '../operations/Games';
+import Distance from '../interfaces/Distance';
 
 interface GameMapProps {
   mapRegion: Region | null;
-  distance: { km: number; miles: number } | null;
+  distance: Distance | null;
   gameId: string;
   location: string;
 }

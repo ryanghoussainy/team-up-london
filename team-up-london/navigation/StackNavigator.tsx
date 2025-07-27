@@ -15,13 +15,14 @@ import GameChatScreen from '../screens/GameChat';
 import { Region } from 'react-native-maps';
 import Game from '../interfaces/Game';
 import Push from '../components/Push';
+import Distance from '../interfaces/Distance';
 
 export type RootStackParamList = {
   Main: undefined;
   Game: {
     game: Game;
-    distance?: { km: number; miles: number };
-    mapRegion?: Region;
+    mapRegion: Region | null;
+    distance: Distance | null;
   };
   Community: { communityId: string };
   CreateCommunity: undefined;
