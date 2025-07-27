@@ -27,20 +27,13 @@ import BackArrow from '../components/BackArrow';
 import Player from '../interfaces/Player';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import * as Location from 'expo-location';
 import useDateTimePickers from '../hooks/useDateTimePickers';
 import usePlayerCountAndCost from '../hooks/usePlayerCountAndCost';
+import useLocationManagement from '../hooks/useLocationManagement';
 
 const { width, height } = Dimensions.get('window');
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateGame'>;
-
-interface LocationData {
-  name: string;
-  latitude: number;
-  longitude: number;
-  address: string;
-}
 
 interface SportsVenue {
   id: string;
@@ -48,6 +41,7 @@ interface SportsVenue {
   image: string;
   website: string;
 }
+
 const SPORTS_VENUES: SportsVenue[] = [
   {
     id: '1',
@@ -125,25 +119,26 @@ export default function CreateGameScreen({
     handleCostChange,
   } = usePlayerCountAndCost();
 
+  // Location management
+  const {
+    location,
+    locationData,
+    showLocationModal,
+    userLocation,
+    mapRegion,
+    setShowLocationModal,
+    getUserLocation,
+    handleLocationSelect,
+    handleMapPress,
+    confirmLocationSelection,
+  } = useLocationManagement();
+
   const [name, setName] = useState('');
-  const [location, setLocation] = useState('');
-  const [locationData, setLocationData] = useState<LocationData | null>(null);
-  const [showLocationModal, setShowLocationModal] = useState(false);
   const [locationType, setLocationType] = useState<
     'Sports Venue' | 'Park' | null
   >(null);
   const [notesFromHost, setNotesFromHost] = useState('');
   const [sportId, setSportId] = useState<string | null>(null);
-  const [userLocation, setUserLocation] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
-  const [mapRegion, setMapRegion] = useState({
-    latitude: 51.5074, // Default to London
-    longitude: -0.1278,
-    latitudeDelta: 0.01,
-    longitudeDelta: 0.01,
-  });
 
   const { communityId } = route.params || null;
   const [loading, setLoading] = useState(false);
@@ -151,29 +146,6 @@ export default function CreateGameScreen({
   useEffect(() => {
     getUserLocation();
   }, []);
-
-  const getUserLocation = async () => {
-    try {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        return;
-      }
-
-      let location = await Location.getCurrentPositionAsync({});
-      const userLoc = {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      };
-      setUserLocation(userLoc);
-      setMapRegion({
-        ...userLoc,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      });
-    } catch (error) {
-      Alert.alert('Error getting location:');
-    }
-  };
 
   const handleCreateGamePress = async () => {
     if (!name.trim()) {
@@ -255,65 +227,6 @@ export default function CreateGameScreen({
     navigation.replace('Game', { game, mapRegion: null, distance: null });
   };
 
-  const handleLocationSelect = (data: any, details: any) => {
-    if (details && details.geometry && details.geometry.location) {
-      const locationInfo: LocationData = {
-        name: data.description,
-        latitude: details.geometry.location.lat,
-        longitude: details.geometry.location.lng,
-        address: details.formatted_address || data.description,
-      };
-      setLocationData(locationInfo);
-      setLocation(data.description);
-
-      // Update map region to show the selected location
-      setMapRegion({
-        latitude: details.geometry.location.lat,
-        longitude: details.geometry.location.lng,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      });
-    }
-  };
-
-  const handleMapPress = (event: any) => {
-    const { latitude, longitude } = event.nativeEvent.coordinate;
-
-    // Update map region to center on the new coordinates
-    setMapRegion({
-      latitude,
-      longitude,
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
-    });
-
-    if (locationData) {
-      // Update existing location data with new coordinates
-      setLocationData({
-        ...locationData,
-        latitude,
-        longitude,
-      });
-    } else {
-      // Create new location data if none exists
-      setLocationData({
-        name: 'Custom Location',
-        latitude,
-        longitude,
-        address: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
-      });
-      setLocation('Custom Location');
-    }
-  };
-
-  const confirmLocationSelection = () => {
-    if (locationData) {
-      setShowLocationModal(false);
-    } else {
-      Alert.alert('Error', 'Please select a location first.');
-    }
-  };
-
   const handleVenuePress = async (venue: SportsVenue) => {
     try {
       const supported = await Linking.canOpenURL(venue.website);
@@ -356,6 +269,7 @@ export default function CreateGameScreen({
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        {/* Header */}
         <View style={styles.sideBySide}>
           <BackArrow style={{ top: 15 }} />
           <Text style={styles.title}>New Game</Text>
@@ -368,6 +282,7 @@ export default function CreateGameScreen({
           </Text>
         </View>
 
+        {/* Game Name */}
         <View style={styles.field}>
           <Text style={styles.label}>
             Game Name <Text style={{ color: 'red' }}>*</Text>
@@ -423,6 +338,7 @@ export default function CreateGameScreen({
           </View>
         </View>
 
+        {/* Location */}
         <View style={styles.field}>
           <Text style={styles.label}>
             Location <Text style={{ color: 'red' }}>*</Text>
@@ -445,7 +361,7 @@ export default function CreateGameScreen({
           </TouchableOpacity>
         </View>
 
-        {/* Location Type Boxes */}
+        {/* Location Type */}
         <View style={styles.field}>
           <Text style={styles.label}>
             Location Type <Text style={{ color: 'red' }}>*</Text>
@@ -473,7 +389,7 @@ export default function CreateGameScreen({
           </View>
         </View>
 
-        {/* Sports Venues List - Only show when Sports Venue is selected */}
+        {/* Sports Venues */}
         {locationType === 'Sports Venue' && (
           <View style={styles.venuesContainer}>
             <Text style={styles.venuesTitle}>Sponsored Sports Venues</Text>
@@ -500,6 +416,7 @@ export default function CreateGameScreen({
           </View>
         )}
 
+        {/* Sport Selection */}
         <Text style={[styles.label]}>
           Select Sport <Text style={{ color: 'red' }}>*</Text>
         </Text>
@@ -621,6 +538,7 @@ export default function CreateGameScreen({
           />
         </View>
 
+        {/* Create Game Button */}
         <TouchableOpacity
           style={[styles.button, loading && { backgroundColor: '#ccc' }]}
           disabled={loading}
@@ -670,7 +588,7 @@ export default function CreateGameScreen({
           />
         )}
 
-        {/* Enhanced Location Selection Modal */}
+        {/* Location Selection Modal */}
         <Modal
           visible={showLocationModal}
           animationType="slide"
