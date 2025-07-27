@@ -12,8 +12,6 @@ import {
 import Fonts from '../config/Fonts';
 import { Feather } from '@expo/vector-icons';
 import useGamesDiscoverySections from '../hooks/useGamesDiscoverySections';
-import GameCard from '../components/GameCard';
-import { AVERAGE_SKILL_LEVEL } from '../constants/averageSkillLevel';
 import { getPlayersInGame } from '../operations/Games';
 import Player from '../interfaces/Player';
 import { useNavigation } from '@react-navigation/native';
@@ -28,6 +26,7 @@ import useGameFilters from '../hooks/useGameFilters';
 import GameFilterModal from '../components/GameFilterModal';
 import GameSearchFilterHeader from '../components/GameSearchFilterHeader';
 import GameTabNavigation, { TabType } from '../components/GameTabNavigation';
+import GamesContent from '../components/GamesContent';
 
 type GamesNavProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -181,6 +180,14 @@ export default function GamesDiscoveryScreen({ player }: { player: Player }) {
     }
   };
 
+  const handleGamePress = (game: GameWithDistanceAndRegion) => {
+    navigation.navigate('Game', {
+      game: game.game,
+      distance: game.distance,
+      mapRegion: game.mapRegion,
+    });
+  };
+
   // Search (+ animation)
   const [searchActive, setSearchActive] = useState(false);
   const searchWidth = useRef(new Animated.Value(0)).current;
@@ -201,45 +208,15 @@ export default function GamesDiscoveryScreen({ player }: { player: Player }) {
 
         <GameTabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
-        {/* Games Content */}
-        <View style={styles.contentSection}>
-          <Text style={styles.sectionTitle}>{getTabTitle()}</Text>
-          <View style={styles.gamesContainer}>
-            {getCurrentGames().map((game, idx) => {
-              const players = playersByGame[game.game.id] || [];
-              const avgSkillLevel = AVERAGE_SKILL_LEVEL(
-                players,
-                game.game.sport_id
-              );
-
-              return (
-                <GameCard
-                  key={idx}
-                  player={player}
-                  game={game.game}
-                  onPress={() =>
-                    navigation.navigate('Game', {
-                      game: game.game,
-                      distance: game.distance,
-                      mapRegion: game.mapRegion,
-                    })
-                  }
-                  distance={game.distance}
-                  isCommunityMember={communityIds.includes(
-                    game.game.community_id || ''
-                  )}
-                  numPlayers={gamePlayers.get(game.game.id)?.length || 0}
-                  averageSkillLevel={avgSkillLevel}
-                />
-              );
-            })}
-            {getCurrentGames().length === 0 && (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyStateText}>No games found</Text>
-              </View>
-            )}
-          </View>
-        </View>
+        <GamesContent
+          title={getTabTitle()}
+          games={getCurrentGames()}
+          player={player}
+          playersByGame={playersByGame}
+          communityIds={communityIds}
+          gamePlayers={gamePlayers}
+          onGamePress={handleGamePress}
+        />
 
         <GameFilterModal
           visible={showFilterModal}
@@ -290,30 +267,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     padding: 16,
-  },
-  contentSection: {
-    flex: 1,
-    marginBottom: 80, // Space for create game button
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    fontFamily: Fonts.main,
-    marginBottom: 16,
-    color: Colours.primary,
-  },
-  gamesContainer: {
-    flex: 1,
-  },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 40,
-  },
-  emptyStateText: {
-    fontSize: 16,
-    fontFamily: Fonts.main,
-    color: '#666',
   },
   button: {
     backgroundColor: Colours.extraButtons,
