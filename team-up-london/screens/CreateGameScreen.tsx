@@ -28,6 +28,7 @@ import PlayerCountSection from '../components/PlayerCountSection';
 import DateTimeSection from '../components/DateTimeSection';
 import GameNameSection from '../components/GameNameSection';
 import CostSection from '../components/CostSection';
+import NotesSection from '../components/NotesSection';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateGame'>;
 
@@ -301,17 +302,7 @@ export default function CreateGameScreen({
         <CostSection cost={cost} onCostChange={handleCostChange} />
 
         {/* Notes from Host */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Notes from Host</Text>
-          <TextInput
-            style={[styles.input, { height: 100 }]}
-            value={notesFromHost}
-            onChangeText={setNotesFromHost}
-            placeholder="Any additional information for players..."
-            placeholderTextColor="#888"
-            multiline
-          />
-        </View>
+        <NotesSection value={notesFromHost} onChangeText={setNotesFromHost} />
 
         {/* Create Game Button */}
         <TouchableOpacity
