@@ -26,6 +26,7 @@ import LocationSelectionModal from '../components/LocationSelectionModal';
 import SportSelectionSection from '../components/SportSelectionSection';
 import PlayerCountSection from '../components/PlayerCountSection';
 import DateTimeSection from '../components/DateTimeSection';
+import GameNameSection from '../components/GameNameSection';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateGame'>;
 
@@ -202,18 +203,7 @@ export default function CreateGameScreen({
         </View>
 
         {/* Game Name */}
-        <View style={styles.field}>
-          <Text style={styles.label}>
-            Game Name <Text style={{ color: 'red' }}>*</Text>
-          </Text>
-          <TextInput
-            style={styles.input}
-            value={name}
-            onChangeText={setName}
-            placeholder="Game Name"
-            placeholderTextColor="#888"
-          />
-        </View>
+        <GameNameSection value={name} onChangeText={setName} />
 
         {/* Date and Time Section */}
         <DateTimeSection
