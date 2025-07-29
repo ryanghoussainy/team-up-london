@@ -10,7 +10,6 @@ import {
   Platform,
   KeyboardAvoidingView,
 } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/StackNavigator';
 import useSports from '../hooks/useSports';
@@ -26,6 +25,7 @@ import SportsVenuesSection from '../components/SportsVenuesSection';
 import LocationSelectionModal from '../components/LocationSelectionModal';
 import SportSelectionSection from '../components/SportSelectionSection';
 import PlayerCountSection from '../components/PlayerCountSection';
+import DateTimeSection from '../components/DateTimeSection';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateGame'>;
 
@@ -215,47 +215,25 @@ export default function CreateGameScreen({
           />
         </View>
 
-        {/* Start Date and Time */}
-        <View style={styles.field}>
-          <Text style={styles.label}>
-            Start Date & Time <Text style={{ color: 'red' }}>*</Text>
-          </Text>
-          <View style={styles.dateTimeContainer}>
-            <TouchableOpacity
-              style={[styles.input, styles.dateTimeInput]}
-              onPress={() => setShowStartDatePicker(true)}
-            >
-              <Text style={styles.dateTimeText}>{formatDate(startTime)}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.input, styles.dateTimeInput]}
-              onPress={() => setShowStartTimePicker(true)}
-            >
-              <Text style={styles.dateTimeText}>{formatTime(startTime)}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* End Date and Time */}
-        <View style={styles.field}>
-          <Text style={styles.label}>
-            End Date & Time <Text style={{ color: 'red' }}>*</Text>
-          </Text>
-          <View style={styles.dateTimeContainer}>
-            <TouchableOpacity
-              style={[styles.input, styles.dateTimeInput]}
-              onPress={() => setShowEndDatePicker(true)}
-            >
-              <Text style={styles.dateTimeText}>{formatDate(endTime)}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.input, styles.dateTimeInput]}
-              onPress={() => setShowEndTimePicker(true)}
-            >
-              <Text style={styles.dateTimeText}>{formatTime(endTime)}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        {/* Date and Time Section */}
+        <DateTimeSection
+          startTime={startTime}
+          endTime={endTime}
+          showStartDatePicker={showStartDatePicker}
+          showStartTimePicker={showStartTimePicker}
+          showEndDatePicker={showEndDatePicker}
+          showEndTimePicker={showEndTimePicker}
+          onShowStartDatePicker={setShowStartDatePicker}
+          onShowStartTimePicker={setShowStartTimePicker}
+          onShowEndDatePicker={setShowEndDatePicker}
+          onShowEndTimePicker={setShowEndTimePicker}
+          onStartDateChange={handleStartDateChange}
+          onStartTimeChange={handleStartTimeChange}
+          onEndDateChange={handleEndDateChange}
+          onEndTimeChange={handleEndTimeChange}
+          formatDate={formatDate}
+          formatTime={formatTime}
+        />
 
         {/* Location */}
         <View style={styles.field}>
@@ -367,45 +345,6 @@ export default function CreateGameScreen({
             {loading ? 'Creating...' : 'Create Game'}
           </Text>
         </TouchableOpacity>
-
-        {/* Date Time Pickers */}
-        {showStartDatePicker && (
-          <DateTimePicker
-            value={startTime}
-            mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={handleStartDateChange}
-            minimumDate={new Date()}
-          />
-        )}
-
-        {showStartTimePicker && (
-          <DateTimePicker
-            value={startTime}
-            mode="time"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={handleStartTimeChange}
-          />
-        )}
-
-        {showEndDatePicker && (
-          <DateTimePicker
-            value={endTime}
-            mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={handleEndDateChange}
-            minimumDate={new Date()}
-          />
-        )}
-
-        {showEndTimePicker && (
-          <DateTimePicker
-            value={endTime}
-            mode="time"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={handleEndTimeChange}
-          />
-        )}
       </ScrollView>
 
       {/* Location Selection Modal */}
@@ -466,18 +405,6 @@ const styles = StyleSheet.create({
   locationButtonIcon: {
     fontSize: 18,
     marginLeft: 10,
-  },
-  dateTimeContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  dateTimeInput: {
-    flex: 0.48,
-    justifyContent: 'center',
-  },
-  dateTimeText: {
-    fontFamily: Fonts.main,
-    fontSize: 16,
   },
   costInputContainer: {
     flexDirection: 'row',
