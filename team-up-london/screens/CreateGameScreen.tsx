@@ -27,6 +27,7 @@ import SportSelectionSection from '../components/SportSelectionSection';
 import PlayerCountSection from '../components/PlayerCountSection';
 import DateTimeSection from '../components/DateTimeSection';
 import GameNameSection from '../components/GameNameSection';
+import CostSection from '../components/CostSection';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateGame'>;
 
@@ -297,20 +298,7 @@ export default function CreateGameScreen({
         />
 
         {/* Cost Field */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Cost per Player</Text>
-          <View style={styles.costInputContainer}>
-            <Text style={styles.currencySymbol}>£</Text>
-            <TextInput
-              style={styles.costInput}
-              value={cost === 0 ? '' : cost.toString()}
-              onChangeText={handleCostChange}
-              placeholder="0.00"
-              placeholderTextColor="#888"
-              keyboardType="decimal-pad"
-            />
-          </View>
-        </View>
+        <CostSection cost={cost} onCostChange={handleCostChange} />
 
         {/* Notes from Host */}
         <View style={styles.field}>
@@ -395,24 +383,6 @@ const styles = StyleSheet.create({
   locationButtonIcon: {
     fontSize: 18,
     marginLeft: 10,
-  },
-  costInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-  },
-  currencySymbol: {
-    fontSize: 16,
-    fontFamily: Fonts.main,
-    paddingLeft: 10,
-    color: '#333',
-  },
-  costInput: {
-    flex: 1,
-    padding: 10,
-    fontFamily: Fonts.main,
   },
   optionContainer: {
     flexDirection: 'row',
