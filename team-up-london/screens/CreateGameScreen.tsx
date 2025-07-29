@@ -4,7 +4,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   Alert,
   Platform,
@@ -23,6 +22,7 @@ import usePlayerCountAndCost from '../hooks/usePlayerCountAndCost';
 import useLocationManagement from '../hooks/useLocationManagement';
 import SportsVenuesSection from '../components/SportsVenuesSection';
 import LocationSelectionModal from '../components/LocationSelectionModal';
+import LocationSection from '../components/LocationSection';
 import SportSelectionSection from '../components/SportSelectionSection';
 import PlayerCountSection from '../components/PlayerCountSection';
 import DateTimeSection from '../components/DateTimeSection';
@@ -228,55 +228,12 @@ export default function CreateGameScreen({
         />
 
         {/* Location */}
-        <View style={styles.field}>
-          <Text style={styles.label}>
-            Location <Text style={{ color: 'red' }}>*</Text>
-          </Text>
-          <TouchableOpacity
-            style={[styles.input, styles.locationButton]}
-            onPress={() => setShowLocationModal(true)}
-          >
-            <View style={styles.locationButtonContent}>
-              <Text
-                style={[
-                  styles.locationButtonText,
-                  { color: location ? '#000' : '#888' },
-                ]}
-              >
-                {location || 'Select location from map...'}
-              </Text>
-              <Text style={styles.locationButtonIcon}>📍</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        {/* Location Type */}
-        <View style={styles.field}>
-          <Text style={styles.label}>
-            Location Type <Text style={{ color: 'red' }}>*</Text>
-          </Text>
-          <View style={styles.optionContainer}>
-            {['Sports Venue', 'Park'].map((type) => (
-              <TouchableOpacity
-                key={type}
-                style={[
-                  styles.optionBox,
-                  locationType === type && styles.optionSelected,
-                ]}
-                onPress={() => setLocationType(type as 'Sports Venue' | 'Park')}
-              >
-                <Text
-                  style={[
-                    styles.optionLabel,
-                    locationType === type && { color: 'white' },
-                  ]}
-                >
-                  {type}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
+        <LocationSection
+          location={location}
+          locationType={locationType}
+          onLocationPress={() => setShowLocationModal(true)}
+          onLocationTypeSelect={setLocationType}
+        />
 
         {/* Sports Venues */}
         {locationType === 'Sports Venue' && <SportsVenuesSection />}
@@ -350,52 +307,6 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.main,
     marginBottom: 6,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 10,
-    fontFamily: Fonts.main,
-  },
-  locationButton: {
-    justifyContent: 'center',
-    minHeight: 50,
-  },
-  locationButtonContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  locationButtonText: {
-    fontFamily: Fonts.main,
-    fontSize: 16,
-    flex: 1,
-  },
-  locationButtonIcon: {
-    fontSize: 18,
-    marginLeft: 10,
-  },
-  optionContainer: {
-    flexDirection: 'row',
-  },
-  optionBox: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 12,
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: Colours.primary,
-    borderRadius: 8,
-  },
-  optionSelected: {
-    backgroundColor: Colours.primary,
-  },
-  optionLabel: {
-    fontSize: 14,
-    fontFamily: Fonts.main,
-    color: Colours.primary,
-  },
   button: {
     marginTop: 24,
     backgroundColor: Colours.primary,
@@ -412,24 +323,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  locationDetails: {
-    marginTop: 8,
-    padding: 12,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 8,
-    borderLeftWidth: 3,
-    borderLeftColor: Colours.primary,
-  },
-  locationDetailText: {
-    fontSize: 14,
-    fontFamily: Fonts.main,
-    color: '#333',
-    marginBottom: 4,
-  },
-  locationCoords: {
-    fontSize: 12,
-    fontFamily: Fonts.main,
-    color: '#555',
   },
 });
