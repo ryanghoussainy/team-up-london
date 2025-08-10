@@ -4,7 +4,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   Alert,
   Platform,
   KeyboardAvoidingView,
@@ -29,6 +28,7 @@ import DateTimeSection from '../components/DateTimeSection';
 import GameNameSection from '../components/GameNameSection';
 import CostSection from '../components/CostSection';
 import NotesSection from '../components/NotesSection';
+import Button from '../components/Button';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateGame'>;
 
@@ -191,7 +191,6 @@ export default function CreateGameScreen({
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
         <View style={styles.sideBySide}>
           <BackArrow style={{ top: 15 }} />
           <Text style={styles.title}>New Game</Text>
@@ -204,10 +203,8 @@ export default function CreateGameScreen({
           </Text>
         </View>
 
-        {/* Game Name */}
         <GameNameSection value={name} onChangeText={setName} />
 
-        {/* Date and Time Section */}
         <DateTimeSection
           startTime={startTime}
           endTime={endTime}
@@ -227,7 +224,6 @@ export default function CreateGameScreen({
           formatTime={formatTime}
         />
 
-        {/* Location */}
         <LocationSection
           location={location}
           locationType={locationType}
@@ -235,17 +231,14 @@ export default function CreateGameScreen({
           onLocationTypeSelect={setLocationType}
         />
 
-        {/* Sports Venues */}
         {locationType === 'Sports Venue' && <SportsVenuesSection />}
 
-        {/* Sport Selection */}
         <SportSelectionSection
           sports={sports}
           selectedSportId={sportId}
           onSportSelect={setSportId}
         />
 
-        {/* Player Count Fields */}
         <PlayerCountSection
           minPlayers={minPlayers}
           maxPlayers={maxPlayers}
@@ -255,25 +248,18 @@ export default function CreateGameScreen({
           onAdjustMaxPlayers={adjustMaxPlayers}
         />
 
-        {/* Cost Field */}
         <CostSection cost={cost} onCostChange={handleCostChange} />
 
-        {/* Notes from Host */}
         <NotesSection value={notesFromHost} onChangeText={setNotesFromHost} />
 
-        {/* Create Game Button */}
-        <TouchableOpacity
-          style={[styles.button, loading && { backgroundColor: '#ccc' }]}
-          disabled={loading}
+        <Button
           onPress={handleCreateGamePress}
-        >
-          <Text style={styles.buttonText}>
-            {loading ? 'Creating...' : 'Create Game'}
-          </Text>
-        </TouchableOpacity>
+          title="Create Game"
+          variant="primary"
+          loading={loading}
+        />
       </ScrollView>
 
-      {/* Location Selection Modal */}
       <LocationSelectionModal
         visible={showLocationModal}
         locationData={locationData}

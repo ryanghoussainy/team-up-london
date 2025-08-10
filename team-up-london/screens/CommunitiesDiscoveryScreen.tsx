@@ -24,6 +24,7 @@ import Player from '../interfaces/Player';
 import { Animated, Dimensions, SafeAreaView } from 'react-native';
 import Community from '../interfaces/Community';
 import Logo from '../components/Logo';
+import Button from '../components/Button';
 
 type GamesNavProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -446,30 +447,12 @@ export default function CommunitiesScreen({ player }: { player: Player }) {
       </View>
 
       {/* Create Community Button */}
-      <TouchableOpacity
-        style={[
-          styles.button,
-          {
-            backgroundColor: Colours.primary,
-            borderColor: Colours.highlightButton,
-            borderWidth: 0,
-            position: 'absolute',
-            bottom: 20,
-            width: '90%',
-            alignSelf: 'center',
-            paddingVertical: 12,
-            flexDirection: 'row',
-          },
-        ]}
+      <Button
         onPress={() => navigation.navigate('CreateCommunity')}
-      >
-        <Feather name="plus" size={24} color={Colours.success} />
-        <Text
-          style={[styles.buttonText, { fontWeight: 'bold', color: 'white' }]}
-        >
-          Create Community
-        </Text>
-      </TouchableOpacity>
+        title="Create Community"
+        variant="create"
+        floating
+      />
     </SafeAreaView>
   );
 }

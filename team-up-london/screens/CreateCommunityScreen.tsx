@@ -18,6 +18,7 @@ import { createCommunity, joinCommunity } from '../operations/Communities';
 import Colours from '../config/Colours';
 import BackArrow from '../components/BackArrow';
 import Player from '../interfaces/Player';
+import Button from '../components/Button';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateCommunity'>;
 
@@ -247,15 +248,12 @@ export default function CreateCommunityScreen({
         </Text>
       </View>
 
-      <TouchableOpacity
-        style={[styles.button, loading && { backgroundColor: '#ccc' }]}
-        disabled={loading}
+      <Button
         onPress={handleCreateCommunityPress}
-      >
-        <Text style={styles.buttonText}>
-          {loading ? 'Creating...' : 'Create'}
-        </Text>
-      </TouchableOpacity>
+        title="Create Community"
+        variant="primary"
+        loading={loading}
+      />
     </ScrollView>
   );
 }

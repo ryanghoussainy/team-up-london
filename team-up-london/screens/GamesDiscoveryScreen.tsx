@@ -12,7 +12,7 @@ import GameFilterModal from '../components/GameFilterModal';
 import GameSearchFilterHeader from '../components/GameSearchFilterHeader';
 import GameTabNavigation from '../components/GameTabNavigation';
 import GamesContent from '../components/GamesContent';
-import CreateGameButton from '../components/CreateGameButton';
+import Button from '../components/Button';
 import useGamesDiscoveryData from '../hooks/useGamesDiscoveryData';
 import useGameTabs from '../hooks/useGameTabs';
 
@@ -70,10 +70,6 @@ export default function GamesDiscoveryScreen({ player }: { player: Player }) {
     });
   };
 
-  const handleCreateGame = () => {
-    navigation.navigate('CreateGame', { communityId: null });
-  };
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container}>
@@ -112,7 +108,12 @@ export default function GamesDiscoveryScreen({ player }: { player: Player }) {
         />
       </ScrollView>
 
-      <CreateGameButton onPress={handleCreateGame} />
+      <Button
+        onPress={() => navigation.navigate('CreateGame', { communityId: null })}
+        title="Create Game"
+        variant="create"
+        floating
+      />
     </SafeAreaView>
   );
 }
